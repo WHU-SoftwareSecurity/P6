@@ -12,7 +12,7 @@ using namespace std;
 
 int main() {
 	cout << hex;
-	string pe_file("C:/Users/qiufeng/Desktop/hello_world.exe");
+	string pe_file("./hello_world.exe");
 	PEHelper pe_info;
 	pe_info.LoadPE(pe_file);
 	pe_info.DisplayPEInfo();
